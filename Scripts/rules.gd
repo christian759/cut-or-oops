@@ -23,7 +23,15 @@ var game_active = true
 
 func _ready():
 	randomize()
-	_generate_new_rule()
+	if Global.current_mode == Global.GameMode.RULES:
+		_generate_new_rule()
+	elif Global.current_mode == Global.GameMode.SURVIVAL:
+		rule_label.text = "SURVIVAL MODE (WIP)"
+		score_label.text = "SCORE: 0"
+	elif Global.current_mode == Global.GameMode.RUSH:
+		rule_label.text = "RUSH MODE (WIP)"
+		score_label.text = "SCORE: 0\nTIME: 60"
+		
 	for i in 12:
 		_spawn_shape()
 

@@ -70,7 +70,7 @@ func _regular_polygon(sides: int) -> PackedVector2Array:
 	var arr := PackedVector2Array()
 	var offset = -PI/2.0
 	for i in sides:
-		var a := offset + TAU * i / sides
+		var a: float = offset + TAU * float(i) / float(sides)
 		arr.append(Vector2(cos(a), sin(a)) * radius)
 	return arr
 
