@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://ym0beqdpwj0g"]
+
+[ext_resource type="Script" uid="uid://n4lxci83c3k4" path="res://Scripts/shape.gd" id="1_4ofyp"]
+
+[node name="Shape" type="Area2D" unique_id=1172238179]
+script = ExtResource("1_4ofyp")
+
+[node name="Outline" type="Polygon2D" parent="." unique_id=1960254781]
+
+[node name="Fill" type="Polygon2D" parent="." unique_id=292638534]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="." unique_id=508751709]

@@ -1,0 +1,78 @@
+[gd_scene format=3 uid="uid://cwy05ktww3su0"]
+
+[ext_resource type="Script" uid="uid://clr4trw2twb10" path="res://Scripts/home.gd" id="1_dt112"]
+[ext_resource type="PackedScene" uid="uid://ym0beqdpwj0g" path="res://Scenes/Shape.tscn" id="1_uq2cn"]
+[ext_resource type="FontFile" uid="uid://c6c1i4fulm8lg" path="res://Assets/monogram/ttf/monogram.ttf" id="3_ibywg"]
+
+[node name="Control" type="Control" unique_id=576115727]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dt112")
+shape_scene = ExtResource("1_uq2cn")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=718506943]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Shapes" type="Node2D" parent="." unique_id=1937754346]
+
+[node name="VFlowContainer" type="VFlowContainer" parent="." unique_id=655541292]
+layout_mode = 1
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -165.0
+offset_right = 165.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Label2" type="Label" parent="VFlowContainer" unique_id=1471674081]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_ibywg")
+theme_override_font_sizes/font_size = 80
+text = "Cut or Opps"
+
+[node name="ButtonContainer" type="VBoxContainer" parent="VFlowContainer" unique_id=344357834]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Button" type="Button" parent="VFlowContainer/ButtonContainer" unique_id=1784737244]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_ibywg")
+theme_override_font_sizes/font_size = 60
+text = "START GAME
+"
+
+[node name="Button2" type="Button" parent="VFlowContainer/ButtonContainer" unique_id=663324919]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_ibywg")
+theme_override_font_sizes/font_size = 60
+text = "SETTINGS
+"
+
+[node name="Button3" type="Button" parent="VFlowContainer/ButtonContainer" unique_id=490339233]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_ibywg")
+theme_override_font_sizes/font_size = 60
+text = "High Score"
+
+[node name="Label" type="Label" parent="VFlowContainer" unique_id=44010889]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("3_ibywg")
+theme_override_font_sizes/font_size = 40
+text = "hint: Follow the rules"
+
+[connection signal="pressed" from="VFlowContainer/ButtonContainer/Button" to="." method="_on_button_pressed"]
