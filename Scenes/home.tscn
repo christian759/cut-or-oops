@@ -1,10 +1,14 @@
-[gd_scene load_steps=7 format=3 uid="uid://cwy05ktww3su0"]
+[gd_scene format=3 uid="uid://cwy05ktww3su0"]
 
 [ext_resource type="Script" uid="uid://clr4trw2twb10" path="res://Scripts/home.gd" id="1_dt112"]
 [ext_resource type="PackedScene" uid="uid://ym0beqdpwj0g" path="res://Scenes/Shape.tscn" id="1_uq2cn"]
 [ext_resource type="FontFile" uid="uid://c6c1i4fulm8lg" path="res://Assets/monogram/ttf/monogram.ttf" id="3_ibywg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn"]
+content_margin_left = 40.0
+content_margin_top = 20.0
+content_margin_right = 40.0
+content_margin_bottom = 20.0
 bg_color = Color(1, 1, 1, 1)
 border_width_left = 6
 border_width_top = 6
@@ -15,28 +19,12 @@ corner_radius_top_left = 16
 corner_radius_top_right = 16
 corner_radius_bottom_right = 16
 corner_radius_bottom_left = 16
-content_margin_left = 40.0
-content_margin_top = 20.0
-content_margin_right = 40.0
-content_margin_bottom = 20.0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
-bg_color = Color(0.9, 0.9, 0.9, 1)
-border_width_left = 6
-border_width_top = 6
-border_width_right = 6
-border_width_bottom = 14
-border_color = Color(0, 0, 0, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-content_margin_left = 40.0
-content_margin_top = 20.0
-content_margin_right = 40.0
-content_margin_bottom = 20.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_pressed"]
+content_margin_left = 40.0
+content_margin_top = 24.0
+content_margin_right = 40.0
+content_margin_bottom = 16.0
 bg_color = Color(0.8, 0.8, 0.8, 1)
 border_width_left = 6
 border_width_top = 10
@@ -47,12 +35,24 @@ corner_radius_top_left = 16
 corner_radius_top_right = 16
 corner_radius_bottom_right = 16
 corner_radius_bottom_left = 16
-content_margin_left = 40.0
-content_margin_top = 24.0
-content_margin_right = 40.0
-content_margin_bottom = 16.0
 
-[node name="Control" type="Control"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+content_margin_left = 40.0
+content_margin_top = 20.0
+content_margin_right = 40.0
+content_margin_bottom = 20.0
+bg_color = Color(0.9, 0.9, 0.9, 1)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 14
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[node name="Control" type="Control" unique_id=804198632]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -62,7 +62,7 @@ grow_vertical = 2
 script = ExtResource("1_dt112")
 shape_scene = ExtResource("1_uq2cn")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=213016226]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -71,9 +71,9 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.9686, 0.9294, 0.8353, 1)
 
-[node name="Shapes" type="Node2D" parent="."]
+[node name="Shapes" type="Node2D" parent="." unique_id=1486989464]
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1447714148]
 layout_mode = 1
 anchors_preset = 13
 anchor_left = 0.5
@@ -86,7 +86,7 @@ grow_vertical = 2
 theme_override_constants/separation = 100
 alignment = 1
 
-[node name="Label2" type="Label" parent="VBoxContainer"]
+[node name="Label2" type="Label" parent="VBoxContainer" unique_id=1177691100]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -96,50 +96,50 @@ theme_override_font_sizes/font_size = 120
 text = "CUT OR OOPS"
 horizontal_alignment = 1
 
-[node name="ButtonContainer" type="VBoxContainer" parent="VBoxContainer"]
+[node name="ButtonContainer" type="VBoxContainer" parent="VBoxContainer" unique_id=1557122893]
 layout_mode = 2
 theme_override_constants/separation = 30
 
-[node name="Button" type="Button" parent="VBoxContainer/ButtonContainer"]
+[node name="Button" type="Button" parent="VBoxContainer/ButtonContainer" unique_id=1550269271]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
 theme_override_colors/font_focus_color = Color(0, 0, 0, 1)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("3_ibywg")
 theme_override_font_sizes/font_size = 70
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "START GAME"
 
-[node name="Button2" type="Button" parent="VBoxContainer/ButtonContainer"]
+[node name="Button2" type="Button" parent="VBoxContainer/ButtonContainer" unique_id=1658837233]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
 theme_override_colors/font_focus_color = Color(0, 0, 0, 1)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("3_ibywg")
 theme_override_font_sizes/font_size = 70
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "SETTINGS"
 
-[node name="Button3" type="Button" parent="VBoxContainer/ButtonContainer"]
+[node name="Button3" type="Button" parent="VBoxContainer/ButtonContainer" unique_id=334844375]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
 theme_override_colors/font_focus_color = Color(0, 0, 0, 1)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("3_ibywg")
 theme_override_font_sizes/font_size = 70
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "HIGH SCORE"
 
-[node name="Label" type="Label" parent="VBoxContainer"]
+[node name="Label" type="Label" parent="VBoxContainer" unique_id=1209681766]
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(1, 1, 1, 1)
