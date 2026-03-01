@@ -1,10 +1,58 @@
-[gd_scene format=3 uid="uid://cwy05ktww3su0"]
+[gd_scene load_steps=7 format=3 uid="uid://cwy05ktww3su0"]
 
 [ext_resource type="Script" uid="uid://clr4trw2twb10" path="res://Scripts/home.gd" id="1_dt112"]
 [ext_resource type="PackedScene" uid="uid://ym0beqdpwj0g" path="res://Scenes/Shape.tscn" id="1_uq2cn"]
 [ext_resource type="FontFile" uid="uid://c6c1i4fulm8lg" path="res://Assets/monogram/ttf/monogram.ttf" id="3_ibywg"]
 
-[node name="Control" type="Control" unique_id=576115727]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 14
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 40.0
+content_margin_top = 20.0
+content_margin_right = 40.0
+content_margin_bottom = 20.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+bg_color = Color(0.9, 0.9, 0.9, 1)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 14
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 40.0
+content_margin_top = 20.0
+content_margin_right = 40.0
+content_margin_bottom = 20.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_pressed"]
+bg_color = Color(0.8, 0.8, 0.8, 1)
+border_width_left = 6
+border_width_top = 10
+border_width_right = 6
+border_width_bottom = 6
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 40.0
+content_margin_top = 24.0
+content_margin_right = 40.0
+content_margin_bottom = 16.0
+
+[node name="Control" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,65 +62,91 @@ grow_vertical = 2
 script = ExtResource("1_dt112")
 shape_scene = ExtResource("1_uq2cn")
 
-[node name="ColorRect" type="ColorRect" parent="." unique_id=718506943]
+[node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+color = Color(0.9686, 0.9294, 0.8353, 1)
 
-[node name="Shapes" type="Node2D" parent="." unique_id=1937754346]
+[node name="Shapes" type="Node2D" parent="."]
 
-[node name="VFlowContainer" type="VFlowContainer" parent="." unique_id=655541292]
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 13
 anchor_left = 0.5
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -165.0
-offset_right = 165.0
+offset_left = -300.0
+offset_right = 300.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 100
 alignment = 1
 
-[node name="Label2" type="Label" parent="VFlowContainer" unique_id=1471674081]
+[node name="Label2" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 28
+theme_override_fonts/font = ExtResource("3_ibywg")
+theme_override_font_sizes/font_size = 120
+text = "CUT OR OOPS"
+horizontal_alignment = 1
+
+[node name="ButtonContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="Button" type="Button" parent="VBoxContainer/ButtonContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("3_ibywg")
-theme_override_font_sizes/font_size = 80
-text = "Cut or Opps"
+theme_override_font_sizes/font_size = 70
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+text = "START GAME"
 
-[node name="ButtonContainer" type="VBoxContainer" parent="VFlowContainer" unique_id=344357834]
+[node name="Button2" type="Button" parent="VBoxContainer/ButtonContainer"]
 layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="Button" type="Button" parent="VFlowContainer/ButtonContainer" unique_id=1784737244]
-layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("3_ibywg")
-theme_override_font_sizes/font_size = 60
-text = "START GAME
-"
+theme_override_font_sizes/font_size = 70
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+text = "SETTINGS"
 
-[node name="Button2" type="Button" parent="VFlowContainer/ButtonContainer" unique_id=663324919]
+[node name="Button3" type="Button" parent="VBoxContainer/ButtonContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("3_ibywg")
-theme_override_font_sizes/font_size = 60
-text = "SETTINGS
-"
+theme_override_font_sizes/font_size = 70
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+text = "HIGH SCORE"
 
-[node name="Button3" type="Button" parent="VFlowContainer/ButtonContainer" unique_id=490339233]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_ibywg")
-theme_override_font_sizes/font_size = 60
-text = "High Score"
-
-[node name="Label" type="Label" parent="VFlowContainer" unique_id=44010889]
+[node name="Label" type="Label" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 16
 theme_override_fonts/font = ExtResource("3_ibywg")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 50
 text = "hint: Follow the rules"
 
-[connection signal="pressed" from="VFlowContainer/ButtonContainer/Button" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/ButtonContainer/Button" to="." method="_on_button_pressed"]

@@ -1,0 +1,39 @@
+[gd_scene load_steps=3 format=3 uid="uid://cwy05spshscr1"]
+
+[ext_resource type="Script" uid="uid://b0e00f13aa5" path="res://Scripts/splash.gd" id="1_splsh"]
+[ext_resource type="FontFile" uid="uid://c6c1i4fulm8lg" path="res://Assets/monogram/ttf/monogram.ttf" id="2_fnt"]
+
+[node name="Splash" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_splsh")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.99, 0.9, 0.0, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="CenterContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 32
+theme_override_fonts/font = ExtResource("2_fnt")
+theme_override_font_sizes/font_size = 140
+text = "CUT OR OOPS"
