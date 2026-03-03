@@ -5,7 +5,7 @@ var outline: Polygon2D
 
 var velocity := Vector2.ZERO
 var rotation_speed := 0.0
-var gravity := 1200.0
+var gravity_strength := 1200.0
 var lifetime := 1.5
 
 func _ready():
@@ -14,7 +14,7 @@ func _ready():
 	tween.tween_callback(queue_free)
 
 func _process(delta):
-	velocity.y += gravity * delta
+	velocity.y += gravity_strength * delta
 	position += velocity * delta
 	rotation += rotation_speed * delta
 

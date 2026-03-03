@@ -22,15 +22,14 @@ var target_count = 0
 var current_progress = 0
 
 var game_active = false
+var spawn_timer := 0.0
+var spawn_interval := 1.5
 
 func _ready():
 	randomize()
 	_ensure_popup_ui()
 	_generate_new_rule()
 	_show_rule_popup()
-	
-	for i in 12:
-		_spawn_shape()
 
 func _ensure_popup_ui():
 	if not has_node("UI/RulePopup"):
@@ -83,10 +82,6 @@ func _start_gameplay():
 	rule_popup.visible = false
 	game_active = true
 
-func _spawn_shape():
-	var s = shape_scene.instantiate()
-	shapes_container.add_child(s)
-
 func _generate_new_rule():
 	current_rule_type = randi() % 2 as RuleType
 	target_count = randi() % 3 + 3 # 3 to 5
@@ -110,6 +105,12 @@ func _get_color_name(color_type: int) -> String:
 	return names[color_type]
 
 func _process(delta):
+	if game_active:
+		spawn_timer += delta
+		if spawn_timer >= spawn_interval:
+			spawn_timer = 0.0
+			_spawn_shape()
+
 	if cut_line.points.size() > 0:
 		cut_line.modulate.a -= delta * 3.0
 		if cut_line.modulate.a <= 0:
@@ -140,14 +141,34 @@ func _input(event):
 			_check_cut(last_mouse_pos, current_pos)
 			last_mouse_pos = current_pos
 
+func _spawn_shape():
+	var s = shape_scene.instantiate()
+	shapes_container.add_child(s)
+	
+	var screen = get_viewport_rect().size
+	var start_x = randf_range(100, screen.x - 100)
+	var start_y = screen.y + 100
+	
+	# Toss upwards and slightly towards the center
+	var angle = randf_range(-PI/4, PI/4) # Narrow upward cone
+	if start_x > screen.x / 2:
+		angle -= PI/10 # Lean left if on right side
+	else:
+		angle += PI/10 # Lean right if on left side
+		
+	var force = randf_range(900, 1200)
+	var vel = Vector2(0, -1).rotated(angle) * force
+	var rot = randf_range(-200, 200)
+	
+	s.setup(Vector2(start_x, start_y), vel, rot)
+
 func _check_cut(start_pos: Vector2, end_pos: Vector2):
 	for shape in shapes_container.get_children():
-		if shape.is_cut: continue
+		if not shape is ShapeObject or shape.is_cut: continue
 		
 		var closest_point = Geometry2D.get_closest_point_to_segment(shape.position, start_pos, end_pos)
 		if closest_point.distance_to(shape.position) < shape.radius:
 			shape.cut_shape(start_pos, end_pos)
-			_spawn_shape()
 			_evaluate_cut(shape)
 
 func _evaluate_cut(shape):

@@ -12,7 +12,7 @@ const COLORS = {
 	ShapeColorName.GREEN: Color("2A9D8F")
 }
 
-@export var move_speed := 120.0
+@export var gravity_strength := 600.0
 @export var rotation_speed := 30.0
 @export var radius := 60.0
 
@@ -27,15 +27,11 @@ var is_cut := false
 
 func _ready():
 	_set_random_shape()
-	_set_random_movement()
-	_set_spawn_position()
 
-func _set_spawn_position():
-	var screen := get_viewport_rect().size
-	position = Vector2(
-		randf_range(radius, screen.x - radius),
-		randf_range(radius, screen.y - radius)
-	)
+func setup(start_pos: Vector2, start_vel: Vector2, rot_speed: float):
+	position = start_pos
+	velocity = start_vel
+	rotation_speed = rot_speed
 
 func _set_random_shape():
 	var points: PackedVector2Array
@@ -63,7 +59,6 @@ func _set_random_shape():
 
 	outline.color = Color.BLACK
 	outline.scale = Vector2(1.15, 1.15)
-
 	fill.color = COLORS[shape_color]
 
 func _regular_polygon(sides: int) -> PackedVector2Array:
@@ -74,29 +69,15 @@ func _regular_polygon(sides: int) -> PackedVector2Array:
 		arr.append(Vector2(cos(a), sin(a)) * radius)
 	return arr
 
-func _set_random_movement():
-	var angle := randf() * TAU
-	velocity = Vector2(cos(angle), sin(angle)) * move_speed
-
 func _process(delta):
+	velocity.y += gravity_strength * delta
 	position += velocity * delta
 	rotation += deg_to_rad(rotation_speed) * delta
 
 	var screen := get_viewport_rect().size
-
-	if position.x <= radius:
-		position.x = radius
-		velocity.x *= -1
-	elif position.x >= screen.x - radius:
-		position.x = screen.x - radius
-		velocity.x *= -1
-
-	if position.y <= radius:
-		position.y = radius
-		velocity.y *= -1
-	elif position.y >= screen.y - radius:
-		position.y = screen.y - radius
-		velocity.y *= -1
+	# Despawn if fallen below screen
+	if position.y > screen.y + radius * 2:
+		queue_free()
 
 func cut_shape(line_start: Vector2, line_end: Vector2):
 	if is_cut: return
