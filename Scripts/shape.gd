@@ -29,6 +29,9 @@ var is_cut := false
 func _ready():
 	_setup_shadow()
 	_set_random_shape()
+	
+	# Fallback cleanup timer
+	get_tree().create_timer(5.0).timeout.connect(queue_free)
 
 func _setup_shadow():
 	shadow.name = "Shadow"
@@ -85,7 +88,12 @@ func _process(delta):
 	rotation += deg_to_rad(rotation_speed) * delta
 
 	var screen := get_viewport_rect().size
+	var despawn_margin := 200.0
 	
+	if position.y > screen.y + despawn_margin or position.y < -despawn_margin or \
+	   position.x > screen.x + despawn_margin or position.x < -despawn_margin:
+		queue_free()
+
 	# Bounce logic for home screen
 	if position.x <= radius:
 		position.x = radius
@@ -100,9 +108,6 @@ func _process(delta):
 	elif position.y >= screen.y - radius:
 		position.y = screen.y - radius
 		velocity.y *= -1
-		
-	await get_tree().create_timer(2.0).timeout
-	queue_free()		
 
 func cut_shape(line_start: Vector2, line_end: Vector2):
 	if is_cut: return
@@ -172,6 +177,3 @@ func _split_polygon(poly: PackedVector2Array, p1: Vector2, p2: Vector2) -> Array
 	return result
 
 
-func _on_timer_timeout() -> void:
-	print("time's up")
-	queue_free()

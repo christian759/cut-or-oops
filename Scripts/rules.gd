@@ -25,6 +25,10 @@ var game_active = false
 var spawn_timer := 0.0
 var spawn_interval := 1.5
 
+var rush_time_left := 0.0
+var is_rush_mode := false
+var time_label: Label
+
 func _ready():
 	randomize()
 	_ensure_popup_ui()
@@ -78,6 +82,20 @@ func _ensure_popup_ui():
 		popup_label.add_theme_font_size_override("font_size", 40)
 		popup_label.text = "RULES"
 		rule_popup.add_child(popup_label)
+		
+	if not has_node("UI/TimeLabel"):
+		time_label = Label.new()
+		time_label.name = "TimeLabel"
+		time_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+		time_label.position += Vector2(-20, 20) # Small offset
+		time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		time_label.add_theme_font_size_override("font_size", 40)
+		time_label.add_theme_color_override("font_outline_color", Color.BLACK)
+		time_label.add_theme_constant_override("outline_size", 8)
+		$UI.add_child(time_label)
+		time_label.hide()
+	else:
+		time_label = $UI/TimeLabel
 
 func _show_rule_popup():
 	game_active = false
@@ -99,11 +117,23 @@ func _show_rule_popup():
 func _start_gameplay():
 	rule_popup.visible = false
 	game_active = true
+	
+	if Global.current_mode == Global.GameMode.RUSH:
+		is_rush_mode = true
+		rush_time_left = 60.0
+		time_label.show()
+	else:
+		is_rush_mode = false
+		time_label.hide()
 
 func _generate_new_rule():
 	current_rule_type = randi() % 2 as RuleType
 	target_count = randi() % 3 + 3 # 3 to 5
 	current_progress = 0
+	
+	if is_rush_mode:
+		# Maybe slightly harder rules in rush?
+		target_count = randi() % 4 + 4 # 4 to 7
 	
 	if current_rule_type == RuleType.TYPE_ONLY:
 		target_shape = randi() % 6
@@ -124,6 +154,14 @@ func _get_color_name(color_type: int) -> String:
 
 func _process(delta):
 	if game_active:
+		if is_rush_mode:
+			rush_time_left -= delta
+			time_label.text = "TIME: %0.1f" % rush_time_left
+			if rush_time_left <= 0:
+				rush_time_left = 0
+				_trigger_game_over("TIME UP!")
+				return
+
 		spawn_timer += delta
 		if spawn_timer >= spawn_interval:
 			spawn_timer = 0.0
@@ -183,7 +221,7 @@ func _spawn_shape():
 		else:
 			angle += PI/10
 			
-		var force = randf_range(900, 1300)
+		var force = randf_range(700, 1000)
 		var vel = Vector2(0, -1).rotated(angle) * force
 		var rot = randf_range(-200, 200)
 		s.setup(Vector2(start_x, start_y), vel, rot, true)
@@ -193,7 +231,7 @@ func _spawn_shape():
 			randf_range(100, screen.y - 100)
 		)
 		var angle = randf() * TAU
-		var vel = Vector2(cos(angle), sin(angle)) * randf_range(150, 300)
+		var vel = Vector2(cos(angle), sin(angle)) * randf_range(100, 200)
 		var rot = randf_range(-100, 100)
 		s.setup(start_pos, vel, rot, false)
 	
@@ -221,18 +259,37 @@ func _evaluate_cut(shape):
 	if is_correct:
 		current_progress += 1
 		score += 10
+		if is_rush_mode:
+			rush_time_left += 2.0 # Correct cut bonus
+		
 		_update_score_ui()
 		if current_progress >= target_count:
+			if is_rush_mode:
+				rush_time_left += 10.0 # Rule completion bonus
 			_generate_new_rule()
 	else:
-		_trigger_oops()
+		if is_rush_mode:
+			# Penalty instead of instant game over
+			rush_time_left -= 5.0
+			score = max(0, score - 5)
+			_update_score_ui()
+			_shake_screen() # Visual feedback
+		else:
+			_trigger_game_over("OOPS!")
+
+func _shake_screen():
+	var tween = create_tween()
+	tween.tween_property(self, "position", Vector2(10, 10), 0.05)
+	tween.tween_property(self, "position", Vector2(-10, -10), 0.05)
+	tween.tween_property(self, "position", Vector2(0, 0), 0.05)
 
 func _update_score_ui():
 	score_label.text = "SCORE: %d\nPROGRESS: %d/%d" % [score, current_progress, target_count]
 
-func _trigger_oops():
+func _trigger_game_over(message: String):
 	game_active = false
 	oops_overlay.visible = true
+	oops_label.text = message
 	
 	var tween = create_tween()
 	oops_label.scale = Vector2.ZERO
