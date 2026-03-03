@@ -23,7 +23,7 @@ func setup(points: PackedVector2Array, color: Color, start_pos: Vector2, start_r
 		fill = Polygon2D.new()
 		add_child(fill)
 	
-	if not outline:
+	if not outline:																																																																					
 		outline = Polygon2D.new()
 		add_child(outline)
 

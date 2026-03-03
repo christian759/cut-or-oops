@@ -27,6 +27,8 @@ var spawn_interval := 1.5
 
 var rush_time_left := 0.0
 var is_rush_mode := false
+var is_survival_mode := false
+var survival_round := 0
 var time_label: Label
 
 func _ready():
@@ -122,18 +124,27 @@ func _start_gameplay():
 		is_rush_mode = true
 		rush_time_left = 60.0
 		time_label.show()
+	elif Global.current_mode == Global.GameMode.SURVIVAL:
+		is_survival_mode = true
+		survival_round = 0
+		time_label.hide()
 	else:
 		is_rush_mode = false
+		is_survival_mode = false
 		time_label.hide()
 
 func _generate_new_rule():
 	current_rule_type = randi() % 2 as RuleType
-	target_count = randi() % 3 + 3 # 3 to 5
 	current_progress = 0
 	
 	if is_rush_mode:
-		# Maybe slightly harder rules in rush?
 		target_count = randi() % 4 + 4 # 4 to 7
+	elif is_survival_mode:
+		survival_round += 1
+		target_count = 3 + int(float(survival_round) / 2.0) # Slowly increases
+		_show_round_announcement()
+	else:
+		target_count = randi() % 3 + 3 # 3 to 5
 	
 	if current_rule_type == RuleType.TYPE_ONLY:
 		target_shape = randi() % 6
@@ -143,6 +154,29 @@ func _generate_new_rule():
 		rule_label.text = "CUT %d %s SHAPES" % [target_count, _get_color_name(target_color)]
 	
 	_update_score_ui()
+
+func _show_round_announcement():
+	# Repurpose popup_label for a quick "ROUND X" flash
+	var original_text = popup_label.text
+	popup_label.text = "ROUND %d" % survival_round
+	rule_popup.visible = true
+	rule_popup.modulate.a = 1.0
+	rule_popup.scale = Vector2.ZERO
+	
+	var tween = create_tween()
+	tween.tween_property(rule_popup, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_interval(1.0)
+	tween.tween_property(rule_popup, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(func(): 
+		rule_popup.visible = false
+		rule_popup.modulate.a = 1.0
+		popup_label.text = original_text
+	)
+
+func _get_difficulty_multiplier() -> float:
+	if is_survival_mode:
+		return 1.0 + (survival_round - 1) * 0.15 # 15% faster per round
+	return 1.0
 
 func _get_shape_name(type: int) -> String:
 	var names = ["TRIANGLES", "SQUARES", "TRAPEZIUMS", "RHOMBUSES", "PENTAGONS", "HEXAGONS"]
@@ -210,6 +244,7 @@ func _spawn_shape():
 	
 	var screen = get_viewport_rect().size
 	var spawn_type = randf()
+	var diff = _get_difficulty_multiplier()
 	
 	if spawn_type < 0.7: # 70% Toss from bottom
 		var start_x = randf_range(100, screen.x - 100)
@@ -221,9 +256,9 @@ func _spawn_shape():
 		else:
 			angle += PI/10
 			
-		var force = randf_range(700, 1000)
+		var force = randf_range(700, 1000) * diff
 		var vel = Vector2(0, -1).rotated(angle) * force
-		var rot = randf_range(-200, 200)
+		var rot = randf_range(-200, 200) * diff
 		s.setup(Vector2(start_x, start_y), vel, rot, true)
 	else: # 30% Spawn on screen with bounce
 		var start_pos = Vector2(
@@ -231,11 +266,11 @@ func _spawn_shape():
 			randf_range(100, screen.y - 100)
 		)
 		var angle = randf() * TAU
-		var vel = Vector2(cos(angle), sin(angle)) * randf_range(100, 200)
-		var rot = randf_range(-100, 100)
+		var vel = Vector2(cos(angle), sin(angle)) * randf_range(100, 200) * diff
+		var rot = randf_range(-100, 100) * diff
 		s.setup(start_pos, vel, rot, false)
 	
-	spawn_interval = randf_range(0.8, 2.0)
+	spawn_interval = randf_range(0.8, 2.0) / diff
 
 func _check_cut(start_pos: Vector2, end_pos: Vector2):
 	for shape in shapes_container.get_children():
