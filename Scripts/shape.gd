@@ -98,10 +98,69 @@ func _process(delta):
 		position.y = screen.y - radius
 		velocity.y *= -1
 
-func cut_shape():
+func cut_shape(line_start: Vector2, line_end: Vector2):
 	if is_cut: return
 	is_cut = true
-	var tween = create_tween()
-	tween.tween_property(self, "scale", Vector2(1.5, 1.5), 0.1)
-	tween.tween_property(self, "modulate:a", 0.0, 0.1)
-	tween.tween_callback(queue_free)
+	
+	var local_start = to_local(line_start)
+	var local_end = to_local(line_end)
+	
+	var polys = _split_polygon(fill.polygon, local_start, local_end)
+	
+	if polys.size() >= 2:
+		var cut_dir = (line_end - line_start).normalized()
+		var force_dir = Vector2(-cut_dir.y, cut_dir.x)
+		
+		# Sort polys so we know which is "left" and "right" based on force_dir
+		for i in range(polys.size()):
+			var poly = polys[i]
+			if poly.size() < 3: continue
+			
+			var center = Vector2.ZERO
+			for p in poly: center += p
+			center /= poly.size()
+			
+			var side = 1.0 if (center - Vector2.ZERO).dot(force_dir) > 0 else -1.0
+			var frag_vel = velocity + force_dir * side * 200.0 + Vector2(0, -100)
+			var frag_rot = deg_to_rad(rotation_speed) * 2.0 * side
+			
+			_spawn_fragment(poly, frag_vel, frag_rot)
+	
+	queue_free()
+
+func _spawn_fragment(poly: PackedVector2Array, frag_vel: Vector2, frag_rot: float):
+	var frag_script = load("res://Scripts/shape_fragment.gd")
+	var frag = Node2D.new()
+	frag.set_script(frag_script)
+	get_parent().add_child(frag)
+	frag.setup(poly, fill.color, global_position, global_rotation, frag_vel, frag_rot)
+
+func _split_polygon(poly: PackedVector2Array, p1: Vector2, p2: Vector2) -> Array[PackedVector2Array]:
+	var left_poly := PackedVector2Array()
+	var right_poly := PackedVector2Array()
+	
+	var line_vec = p2 - p1
+	var normal = Vector2(-line_vec.y, line_vec.x).normalized()
+	
+	for i in range(poly.size()):
+		var a = poly[i]
+		var b = poly[(i + 1) % poly.size()]
+		
+		var dist_a = (a - p1).dot(normal)
+		var dist_b = (b - p1).dot(normal)
+		
+		if dist_a >= 0:
+			left_poly.append(a)
+		else:
+			right_poly.append(a)
+			
+		if (dist_a > 0 and dist_b < 0) or (dist_a < 0 and dist_b > 0):
+			var t = dist_a / (dist_a - dist_b)
+			var intersect = a + (b - a) * t
+			left_poly.append(intersect)
+			right_poly.append(intersect)
+			
+	var result: Array[PackedVector2Array] = []
+	if left_poly.size() >= 3: result.append(left_poly)
+	if right_poly.size() >= 3: result.append(right_poly)
+	return result

@@ -1,9 +1,5 @@
 extends Control
 
-func _on_rules_button_pressed() -> void:
-	Global.current_mode = Global.GameMode.RULES
-	_start_game()
-
 func _on_survival_button_pressed() -> void:
 	Global.current_mode = Global.GameMode.SURVIVAL
 	_start_game()
