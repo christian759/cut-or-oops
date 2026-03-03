@@ -109,6 +109,19 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "RULES"
 
+[node name="NormalButton" type="Button" parent="VBoxContainer/ButtonContainer" unique_id=1813643828]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 70
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "NORMAL"
+
 [node name="SurvivalButton" type="Button" parent="VBoxContainer/ButtonContainer" unique_id=1044885087]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
@@ -149,6 +162,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "BACK"
 
 [connection signal="pressed" from="VBoxContainer/ButtonContainer/RulesButton" to="." method="_on_rules_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/ButtonContainer/NormalButton" to="." method="_on_normal_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/ButtonContainer/SurvivalButton" to="." method="_on_survival_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/ButtonContainer/RushButton" to="." method="_on_rush_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/ButtonContainer/BackButton" to="." method="_on_back_button_pressed"]

@@ -175,5 +175,3 @@ func _split_polygon(poly: PackedVector2Array, p1: Vector2, p2: Vector2) -> Array
 	if left_poly.size() >= 3: result.append(left_poly)
 	if right_poly.size() >= 3: result.append(right_poly)
 	return result
-
-

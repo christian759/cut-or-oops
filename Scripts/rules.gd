@@ -28,14 +28,21 @@ var spawn_interval := 1.5
 var rush_time_left := 0.0
 var is_rush_mode := false
 var is_survival_mode := false
+var is_normal_mode := false
 var survival_round := 0
 var time_label: Label
+var slash_audio: AudioStreamPlayer
 
 func _ready():
 	randomize()
 	_ensure_popup_ui()
 	_generate_new_rule()
 	rule_label.hide()
+	
+	# Audio setup
+	slash_audio = AudioStreamPlayer.new()
+	add_child(slash_audio)
+	# Users will need to set slash_audio.stream to an actual sound file
 	
 	# Knife Slash Visuals
 	cut_line.width = 20.0
@@ -128,9 +135,13 @@ func _start_gameplay():
 		is_survival_mode = true
 		survival_round = 0
 		time_label.hide()
+	elif Global.current_mode == Global.GameMode.NORMAL:
+		is_normal_mode = true
+		time_label.hide()
 	else:
 		is_rush_mode = false
 		is_survival_mode = false
+		is_normal_mode = false
 		time_label.hide()
 
 func _generate_new_rule():
@@ -279,7 +290,12 @@ func _check_cut(start_pos: Vector2, end_pos: Vector2):
 		var closest_point = Geometry2D.get_closest_point_to_segment(shape.position, start_pos, end_pos)
 		if closest_point.distance_to(shape.position) < shape.radius:
 			shape.cut_shape(start_pos, end_pos)
+			_play_slash_sound()
 			_evaluate_cut(shape)
+
+func _play_slash_sound():
+	if slash_audio.stream:
+		slash_audio.play()
 
 func _evaluate_cut(shape):
 	var is_correct = false
@@ -303,9 +319,10 @@ func _evaluate_cut(shape):
 				rush_time_left += 10.0 # Rule completion bonus
 			_generate_new_rule()
 	else:
-		if is_rush_mode:
+		if is_rush_mode or is_normal_mode:
 			# Penalty instead of instant game over
-			rush_time_left -= 5.0
+			if is_rush_mode:
+				rush_time_left -= 5.0
 			score = max(0, score - 5)
 			_update_score_ui()
 			_shake_screen() # Visual feedback

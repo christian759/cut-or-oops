@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://cust6y6bm3jmy" path="res://Scripts/splash.gd" id="1_i8nxx"]
 [ext_resource type="FontFile" uid="uid://c6c1i4fulm8lg" path="res://Assets/monogram/ttf/monogram.ttf" id="2_c6c1i"]
 
-[node name="Control" type="Control" unique_id=2090833288]
+[node name="Control2" type="Control" unique_id=2090833288]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -54,6 +54,5 @@ horizontal_alignment = 1
 
 [node name="Timer" type="Timer" parent="." unique_id=2127969098]
 wait_time = 2.0
-one_shot = true
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
