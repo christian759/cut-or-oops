@@ -12,10 +12,9 @@ const COLORS = {
 	ShapeColorName.GREEN: Color("2A9D8F")
 }
 
-@export var gravity_strength := 600.0
+@export var use_gravity := false
 @export var rotation_speed := 30.0
 @export var radius := 60.0
-@export var use_gravity := true
 
 @onready var outline: Polygon2D = $Outline
 @onready var fill: Polygon2D = $Fill
@@ -38,11 +37,11 @@ func _setup_shadow():
 	shadow.color = Color(0, 0, 0, 0.2)
 	shadow.position = Vector2(8, 8) # Offset for depth
 
-func setup(start_pos: Vector2, start_vel: Vector2, rot_speed: float, gravity_enabled: bool = true):
+func setup(start_pos: Vector2, start_vel: Vector2, rot_speed: float, gravity_enabled: bool = false):
 	position = start_pos
 	velocity = start_vel
 	rotation_speed = rot_speed
-	use_gravity = gravity_enabled
+	use_gravity = false
 
 func _set_random_shape():
 	var points: PackedVector2Array
@@ -82,33 +81,28 @@ func _regular_polygon(sides: int) -> PackedVector2Array:
 	return arr
 
 func _process(delta):
-	if use_gravity:
-		velocity.y += gravity_strength * delta
-	
 	position += velocity * delta
 	rotation += deg_to_rad(rotation_speed) * delta
 
 	var screen := get_viewport_rect().size
 	
-	if use_gravity:
-		# Despawn if fallen below screen
-		if position.y > screen.y + radius * 2:
-			queue_free()
-	else:
-		# Bounce logic for home screen
-		if position.x <= radius:
-			position.x = radius
-			velocity.x *= -1
-		elif position.x >= screen.x - radius:
-			position.x = screen.x - radius
-			velocity.x *= -1
+	# Bounce logic for home screen
+	if position.x <= radius:
+		position.x = radius
+		velocity.x *= -1
+	elif position.x >= screen.x - radius:
+		position.x = screen.x - radius
+		velocity.x *= -1
 
-		if position.y <= radius:
-			position.y = radius
-			velocity.y *= -1
-		elif position.y >= screen.y - radius:
-			position.y = screen.y - radius
-			velocity.y *= -1
+	if position.y <= radius:
+		position.y = radius
+		velocity.y *= -1
+	elif position.y >= screen.y - radius:
+		position.y = screen.y - radius
+		velocity.y *= -1
+		
+	await get_tree().create_timer(2.0).timeout
+	queue_free()		
 
 func cut_shape(line_start: Vector2, line_end: Vector2):
 	if is_cut: return
@@ -137,7 +131,7 @@ func cut_shape(line_start: Vector2, line_end: Vector2):
 			var frag_rot = deg_to_rad(rotation_speed) * 2.0 * side
 			
 			_spawn_fragment(poly, frag_vel, frag_rot)
-	
+			
 	queue_free()
 
 func _spawn_fragment(poly: PackedVector2Array, frag_vel: Vector2, frag_rot: float):
@@ -176,3 +170,8 @@ func _split_polygon(poly: PackedVector2Array, p1: Vector2, p2: Vector2) -> Array
 	if left_poly.size() >= 3: result.append(left_poly)
 	if right_poly.size() >= 3: result.append(right_poly)
 	return result
+
+
+func _on_timer_timeout() -> void:
+	print("time's up")
+	queue_free()

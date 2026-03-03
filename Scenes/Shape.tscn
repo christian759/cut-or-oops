@@ -10,3 +10,8 @@ script = ExtResource("1_4ofyp")
 [node name="Fill" type="Polygon2D" parent="." unique_id=292638534]
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="." unique_id=508751709]
+
+[node name="Timer" type="Timer" parent="." unique_id=1627767056]
+wait_time = 4.0
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

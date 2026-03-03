@@ -30,6 +30,22 @@ func _ready():
 	_ensure_popup_ui()
 	_generate_new_rule()
 	rule_label.hide()
+	
+	# Knife Slash Visuals
+	cut_line.width = 20.0
+	var curve = Curve.new()
+	curve.add_point(Vector2(0, 0))
+	curve.add_point(Vector2(0.5, 1))
+	curve.add_point(Vector2(1, 0))
+	cut_line.width_curve = curve
+	
+	var gradient = Gradient.new()
+	gradient.add_point(0.0, Color(1, 1, 1, 0))
+	gradient.add_point(0.2, Color(1, 1, 1, 1))
+	gradient.add_point(0.8, Color(1, 1, 1, 1))
+	gradient.add_point(1.0, Color(1, 1, 1, 0))
+	cut_line.gradient = gradient
+	
 	_show_rule_popup()
 
 func _ensure_popup_ui():
@@ -106,6 +122,21 @@ func _get_color_name(color_type: int) -> String:
 	var names = ["RED", "BLUE", "YELLOW", "GREEN"]
 	return names[color_type]
 
+func _process(delta):
+	if game_active:
+		spawn_timer += delta
+		if spawn_timer >= spawn_interval:
+			spawn_timer = 0.0
+			_spawn_shape()
+
+	if cut_line.points.size() > 0:
+		cut_line.modulate.a -= delta * 8.0 # Very fast fade for knife effect
+		if cut_line.modulate.a <= 0:
+			cut_line.clear_points()
+		elif cut_line.points.size() > 10:
+			# Keep it short like a blade
+			cut_line.remove_point(0)
+
 func _input(event):
 	if event is InputEventScreenTouch or event is InputEventMouseButton:
 		if event.pressed:
@@ -128,10 +159,12 @@ func _input(event):
 		if not game_active: return
 		if is_drawing:
 			var current_pos = event.position
-			cut_line.add_point(current_pos)
-			cut_line.modulate.a = 1.0
-			_check_cut(last_mouse_pos, current_pos)
-			last_mouse_pos = current_pos
+			# Only add point if moved enough to avoid jagged lines
+			if current_pos.distance_to(last_mouse_pos) > 5.0:
+				cut_line.add_point(current_pos)
+				cut_line.modulate.a = 1.0
+				_check_cut(last_mouse_pos, current_pos)
+				last_mouse_pos = current_pos
 
 func _spawn_shape():
 	var s = shape_scene.instantiate()

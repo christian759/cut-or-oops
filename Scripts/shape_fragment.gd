@@ -6,7 +6,7 @@ var outline: Polygon2D
 var velocity := Vector2.ZERO
 var rotation_speed := 0.0
 var gravity_strength := 1200.0
-var lifetime := 1.5
+var lifetime := 2.5
 
 func _ready():
 	var tween = create_tween()
