@@ -6,8 +6,8 @@ extends Control
 @onready var score_label = $UI/ScoreLabel
 @onready var oops_overlay = $UI/OopsOverlay
 @onready var oops_label = $UI/OopsOverlay/OopsLabel
-@onready var rule_popup = $UI/RulePopup
-@onready var popup_label = $UI/RulePopup/PopupLabel
+var rule_popup: ColorRect
+var popup_label: Label
 @onready var cut_line = $CutLine
 
 var is_drawing = false
@@ -29,6 +29,7 @@ func _ready():
 	randomize()
 	_ensure_popup_ui()
 	_generate_new_rule()
+	rule_label.hide()
 	_show_rule_popup()
 
 func _ensure_popup_ui():
@@ -41,6 +42,7 @@ func _ensure_popup_ui():
 		rule_popup.size = Vector2(600, 400)
 		rule_popup.position -= rule_popup.size / 2.0
 		rule_popup.color = Color(1, 1, 1, 0.9)
+		rule_popup.visible = false
 		canvas.add_child(rule_popup)
 		
 		# Add outline to popup
@@ -104,26 +106,15 @@ func _get_color_name(color_type: int) -> String:
 	var names = ["RED", "BLUE", "YELLOW", "GREEN"]
 	return names[color_type]
 
-func _process(delta):
-	if game_active:
-		spawn_timer += delta
-		if spawn_timer >= spawn_interval:
-			spawn_timer = 0.0
-			_spawn_shape()
-
-	if cut_line.points.size() > 0:
-		cut_line.modulate.a -= delta * 3.0
-		if cut_line.modulate.a <= 0:
-			cut_line.clear_points()
-
 func _input(event):
-	if not game_active: return
-	
 	if event is InputEventScreenTouch or event is InputEventMouseButton:
 		if event.pressed:
-			if rule_popup.visible:
+			if rule_popup and rule_popup.visible:
 				_start_gameplay()
+				get_viewport().set_input_as_handled()
 				return
+			
+			if not game_active: return
 				
 			is_drawing = true
 			last_mouse_pos = event.position
@@ -134,6 +125,7 @@ func _input(event):
 			is_drawing = false
 			
 	elif event is InputEventScreenDrag or event is InputEventMouseMotion:
+		if not game_active: return
 		if is_drawing:
 			var current_pos = event.position
 			cut_line.add_point(current_pos)
@@ -146,21 +138,33 @@ func _spawn_shape():
 	shapes_container.add_child(s)
 	
 	var screen = get_viewport_rect().size
-	var start_x = randf_range(100, screen.x - 100)
-	var start_y = screen.y + 100
+	var spawn_type = randf()
 	
-	# Toss upwards and slightly towards the center
-	var angle = randf_range(-PI/4, PI/4) # Narrow upward cone
-	if start_x > screen.x / 2:
-		angle -= PI/10 # Lean left if on right side
-	else:
-		angle += PI/10 # Lean right if on left side
+	if spawn_type < 0.7: # 70% Toss from bottom
+		var start_x = randf_range(100, screen.x - 100)
+		var start_y = screen.y + 100
 		
-	var force = randf_range(900, 1200)
-	var vel = Vector2(0, -1).rotated(angle) * force
-	var rot = randf_range(-200, 200)
+		var angle = randf_range(-PI/4, PI/4)
+		if start_x > screen.x / 2:
+			angle -= PI/10
+		else:
+			angle += PI/10
+			
+		var force = randf_range(900, 1300)
+		var vel = Vector2(0, -1).rotated(angle) * force
+		var rot = randf_range(-200, 200)
+		s.setup(Vector2(start_x, start_y), vel, rot, true)
+	else: # 30% Spawn on screen with bounce
+		var start_pos = Vector2(
+			randf_range(100, screen.x - 100),
+			randf_range(100, screen.y - 100)
+		)
+		var angle = randf() * TAU
+		var vel = Vector2(cos(angle), sin(angle)) * randf_range(150, 300)
+		var rot = randf_range(-100, 100)
+		s.setup(start_pos, vel, rot, false)
 	
-	s.setup(Vector2(start_x, start_y), vel, rot)
+	spawn_interval = randf_range(0.8, 2.0)
 
 func _check_cut(start_pos: Vector2, end_pos: Vector2):
 	for shape in shapes_container.get_children():

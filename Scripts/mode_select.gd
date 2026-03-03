@@ -1,5 +1,9 @@
 extends Control
 
+func _ready():
+	if has_node("VBoxContainer/ButtonContainer/RulesButton"):
+		get_node("VBoxContainer/ButtonContainer/RulesButton").hide()
+
 func _on_survival_button_pressed() -> void:
 	Global.current_mode = Global.GameMode.SURVIVAL
 	_start_game()

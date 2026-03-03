@@ -15,10 +15,12 @@ const COLORS = {
 @export var gravity_strength := 600.0
 @export var rotation_speed := 30.0
 @export var radius := 60.0
+@export var use_gravity := true
 
 @onready var outline: Polygon2D = $Outline
 @onready var fill: Polygon2D = $Fill
 @onready var collision_poly: CollisionPolygon2D = $CollisionPolygon2D
+@onready var shadow: Polygon2D = Polygon2D.new()
 
 var velocity := Vector2.ZERO
 var shape_type: ShapeType
@@ -26,12 +28,21 @@ var shape_color: ShapeColorName
 var is_cut := false
 
 func _ready():
+	_setup_shadow()
 	_set_random_shape()
 
-func setup(start_pos: Vector2, start_vel: Vector2, rot_speed: float):
+func _setup_shadow():
+	shadow.name = "Shadow"
+	add_child(shadow)
+	move_child(shadow, 0) # Put at the back
+	shadow.color = Color(0, 0, 0, 0.2)
+	shadow.position = Vector2(8, 8) # Offset for depth
+
+func setup(start_pos: Vector2, start_vel: Vector2, rot_speed: float, gravity_enabled: bool = true):
 	position = start_pos
 	velocity = start_vel
 	rotation_speed = rot_speed
+	use_gravity = gravity_enabled
 
 func _set_random_shape():
 	var points: PackedVector2Array
@@ -56,6 +67,7 @@ func _set_random_shape():
 	fill.polygon = points
 	outline.polygon = points
 	collision_poly.polygon = points
+	shadow.polygon = points
 
 	outline.color = Color.BLACK
 	outline.scale = Vector2(1.15, 1.15)
@@ -70,14 +82,33 @@ func _regular_polygon(sides: int) -> PackedVector2Array:
 	return arr
 
 func _process(delta):
-	velocity.y += gravity_strength * delta
+	if use_gravity:
+		velocity.y += gravity_strength * delta
+	
 	position += velocity * delta
 	rotation += deg_to_rad(rotation_speed) * delta
 
 	var screen := get_viewport_rect().size
-	# Despawn if fallen below screen
-	if position.y > screen.y + radius * 2:
-		queue_free()
+	
+	if use_gravity:
+		# Despawn if fallen below screen
+		if position.y > screen.y + radius * 2:
+			queue_free()
+	else:
+		# Bounce logic for home screen
+		if position.x <= radius:
+			position.x = radius
+			velocity.x *= -1
+		elif position.x >= screen.x - radius:
+			position.x = screen.x - radius
+			velocity.x *= -1
+
+		if position.y <= radius:
+			position.y = radius
+			velocity.y *= -1
+		elif position.y >= screen.y - radius:
+			position.y = screen.y - radius
+			velocity.y *= -1
 
 func cut_shape(line_start: Vector2, line_end: Vector2):
 	if is_cut: return
