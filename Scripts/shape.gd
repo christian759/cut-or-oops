@@ -15,6 +15,7 @@ const COLORS = {
 @export var use_gravity := false
 @export var rotation_speed := 30.0
 @export var radius := 60.0
+@export var can_despawn := true
 
 @onready var outline: Polygon2D = $Outline
 @onready var fill: Polygon2D = $Fill
@@ -29,9 +30,6 @@ var is_cut := false
 func _ready():
 	_setup_shadow()
 	_set_random_shape()
-	
-	# Fallback cleanup timer
-	get_tree().create_timer(5.0).timeout.connect(queue_free)
 
 func _setup_shadow():
 	shadow.name = "Shadow"
@@ -40,11 +38,16 @@ func _setup_shadow():
 	shadow.color = Color(0, 0, 0, 0.2)
 	shadow.position = Vector2(8, 8) # Offset for depth
 
-func setup(start_pos: Vector2, start_vel: Vector2, rot_speed: float, gravity_enabled: bool = false):
+func setup(start_pos: Vector2, start_vel: Vector2, rot_speed: float, gravity_enabled: bool = false, despawn_enabled: bool = true):
 	position = start_pos
 	velocity = start_vel
 	rotation_speed = rot_speed
 	use_gravity = gravity_enabled
+	can_despawn = despawn_enabled
+	
+	# Fallback cleanup timer
+	if can_despawn:
+		get_tree().create_timer(5.0).timeout.connect(queue_free)
 
 func _set_random_shape():
 	var points: PackedVector2Array
@@ -94,8 +97,8 @@ func _process(delta):
 	var screen := get_viewport_rect().size
 	var despawn_margin := 200.0
 	
-	if position.y > screen.y + despawn_margin or position.y < -despawn_margin or \
-	   position.x > screen.x + despawn_margin or position.x < -despawn_margin:
+	if can_despawn and (position.y > screen.y + despawn_margin or position.y < -despawn_margin or \
+	   position.x > screen.x + despawn_margin or position.x < -despawn_margin):
 		queue_free()
 
 	# Bounce logic for home screen

@@ -18,14 +18,13 @@ func spawn_floating_shapes():
 	var screen = get_viewport_rect().size
 	for i in shape_count:
 		var shape = shape_scene.instantiate()
-		shapes_layer.add_child(shape)
-		
 		var start_pos = Vector2(randf_range(50, screen.x-50), randf_range(50, screen.y-50))
 		var angle = randf() * TAU
 		var vel = Vector2(cos(angle), sin(angle)) * randf_range(100, 200)
 		var rot = randf_range(-50, 50)
 		
-		shape.setup(start_pos, vel, rot, false)
+		shape.setup(start_pos, vel, rot, false, false)
+		shapes_layer.add_child(shape)
 
 
 func _on_button_pressed() -> void:
