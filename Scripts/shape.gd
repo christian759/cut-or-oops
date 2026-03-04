@@ -44,7 +44,7 @@ func setup(start_pos: Vector2, start_vel: Vector2, rot_speed: float, gravity_ena
 	position = start_pos
 	velocity = start_vel
 	rotation_speed = rot_speed
-	use_gravity = false
+	use_gravity = gravity_enabled
 
 func _set_random_shape():
 	var points: PackedVector2Array
@@ -74,6 +74,10 @@ func _set_random_shape():
 	outline.color = Color.BLACK
 	outline.scale = Vector2(1.15, 1.15)
 	fill.color = COLORS[shape_color]
+
+func is_point_inside(pos: Vector2) -> bool:
+	var local_pos = to_local(pos)
+	return Geometry2D.is_point_in_polygon(local_pos, fill.polygon) or local_pos.length() < radius * 0.8
 
 func _regular_polygon(sides: int) -> PackedVector2Array:
 	var arr := PackedVector2Array()

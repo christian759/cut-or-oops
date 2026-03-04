@@ -23,6 +23,9 @@ Global="*res://Scripts/global.gd"
 
 window/size/viewport_width=1080
 window/size/viewport_height=1920
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation="portrait"
 
 [physics]
 
@@ -33,3 +36,7 @@ window/size/viewport_height=1920
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="mobile"
 textures/vram_compression/import_etc2_astc=true
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/admob/plugin.cfg")

@@ -156,6 +156,9 @@ func _generate_new_rule():
 		_show_round_announcement()
 	else:
 		target_count = randi() % 3 + 3 # 3 to 5
+		if is_normal_mode and score >= 100: # Example win condition for normal
+			_trigger_win("LEVEL COMPLETE!")
+			return
 	
 	if current_rule_type == RuleType.TYPE_ONLY:
 		target_shape = randi() % 6
@@ -287,8 +290,9 @@ func _check_cut(start_pos: Vector2, end_pos: Vector2):
 	for shape in shapes_container.get_children():
 		if not shape is ShapeObject or shape.is_cut: continue
 		
-		var closest_point = Geometry2D.get_closest_point_to_segment(shape.position, start_pos, end_pos)
-		if closest_point.distance_to(shape.position) < shape.radius:
+		# More robust check: check endpoints and midpoints to ensure we don't skip over fast shapes
+		var mid_pos = (start_pos + end_pos) / 2.0
+		if shape.is_point_inside(start_pos) or shape.is_point_inside(end_pos) or shape.is_point_inside(mid_pos):
 			shape.cut_shape(start_pos, end_pos)
 			_play_slash_sound()
 			_evaluate_cut(shape)
@@ -347,5 +351,18 @@ func _trigger_game_over(message: String):
 	oops_label.scale = Vector2.ZERO
 	tween.tween_property(oops_label, "scale", Vector2.ONE, 0.5).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
-	await get_tree().create_timer(2.0).timeout
+	await Global.show_ad_if_needed(self)
+	get_tree().change_scene_to_file("res://Scenes/home.tscn")
+
+func _trigger_win(message: String):
+	game_active = false
+	oops_overlay.visible = true
+	oops_overlay.color = Color(0, 0.8, 0, 0.5) # Greenish for win
+	oops_label.text = message
+	
+	var tween = create_tween()
+	oops_label.scale = Vector2.ZERO
+	tween.tween_property(oops_label, "scale", Vector2.ONE, 0.5).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	
+	await Global.show_ad_if_needed(self)
 	get_tree().change_scene_to_file("res://Scenes/home.tscn")
