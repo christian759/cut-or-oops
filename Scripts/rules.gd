@@ -35,9 +35,15 @@ var slash_audio: AudioStreamPlayer
 
 func _ready():
 	randomize()
+	_initialize_mode()
 	_ensure_popup_ui()
 	_generate_new_rule()
-	rule_label.hide()
+	
+	rule_label.show() # Ensure it's visible
+	# Style rule_label further
+	rule_label.add_theme_font_size_override("font_size", 50)
+	rule_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	rule_label.add_theme_constant_override("outline_size", 12)
 	
 	# Audio setup
 	slash_audio = AudioStreamPlayer.new()
@@ -61,34 +67,50 @@ func _ready():
 	
 	_show_rule_popup()
 
+func _initialize_mode():
+	if Global.current_mode == Global.GameMode.RUSH:
+		is_rush_mode = true
+		rush_time_left = 60.0
+	elif Global.current_mode == Global.GameMode.SURVIVAL:
+		is_survival_mode = true
+		survival_round = 0
+	elif Global.current_mode == Global.GameMode.NORMAL:
+		is_normal_mode = true
+	else:
+		is_rush_mode = false
+		is_survival_mode = false
+		is_normal_mode = false
+
 func _ensure_popup_ui():
 	if not has_node("UI/RulePopup"):
 		var canvas = get_node("UI")
 		
+		# Enhanced Dark/Glass Backdrop
 		rule_popup = ColorRect.new()
 		rule_popup.name = "RulePopup"
 		rule_popup.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-		rule_popup.size = Vector2(600, 400)
+		rule_popup.size = Vector2(700, 500)
 		rule_popup.position -= rule_popup.size / 2.0
-		rule_popup.color = Color(1, 1, 1, 0.9)
+		rule_popup.color = Color(0, 0, 0, 0.85) # Dark premium background
 		rule_popup.visible = false
 		canvas.add_child(rule_popup)
 		
-		# Add outline to popup
-		var outline = ReferenceRect.new()
-		outline.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		outline.border_color = Color.BLACK
-		outline.border_width = 8
-		outline.editor_only = false
-		rule_popup.add_child(outline)
+		# Vibrant Border
+		var border = ReferenceRect.new()
+		border.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		border.border_color = Color("F4A261") # Match yellow/orange theme
+		border.border_width = 12
+		border.editor_only = false
+		rule_popup.add_child(border)
 		
 		popup_label = Label.new()
 		popup_label.name = "PopupLabel"
 		popup_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		popup_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		popup_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		popup_label.add_theme_color_override("font_color", Color.BLACK)
-		popup_label.add_theme_font_size_override("font_size", 40)
+		popup_label.add_theme_color_override("font_color", Color.WHITE)
+		popup_label.add_theme_font_size_override("font_size", 45)
+		popup_label.add_theme_fonts_override("font", preload("res://Assets/monogram/ttf/monogram.ttf"))
 		popup_label.text = "RULES"
 		rule_popup.add_child(popup_label)
 		
@@ -96,11 +118,15 @@ func _ensure_popup_ui():
 		time_label = Label.new()
 		time_label.name = "TimeLabel"
 		time_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-		time_label.position += Vector2(-20, 20) # Small offset
+		time_label.offset_left = -300
+		time_label.offset_top = 40
+		time_label.offset_right = -40
 		time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		time_label.add_theme_font_size_override("font_size", 40)
+		time_label.add_theme_font_size_override("font_size", 60)
+		time_label.add_theme_color_override("font_color", Color("E63946"))
 		time_label.add_theme_color_override("font_outline_color", Color.BLACK)
-		time_label.add_theme_constant_override("outline_size", 8)
+		time_label.add_theme_constant_override("outline_size", 12)
+		time_label.add_theme_fonts_override("font", preload("res://Assets/monogram/ttf/monogram.ttf"))
 		$UI.add_child(time_label)
 		time_label.hide()
 	else:
@@ -112,36 +138,26 @@ func _show_rule_popup():
 	
 	var mode_name = ""
 	match Global.current_mode:
-		Global.GameMode.RULES: mode_name = "RULES MODE"
-		Global.GameMode.SURVIVAL: mode_name = "SURVIVAL"
-		Global.GameMode.RUSH: mode_name = "RUSH"
+		Global.GameMode.RULES: mode_name = "RULES CHALLENGE"
+		Global.GameMode.SURVIVAL: mode_name = "SURVIVAL MODE"
+		Global.GameMode.RUSH: mode_name = "RUSH ATTACK"
+		Global.GameMode.NORMAL: mode_name = "NORMAL MODE"
 	
-	popup_label.text = "[%s]\n\n%s\n\nTAP TO START" % [mode_name, rule_label.text]
+	popup_label.text = "[ %s ]\n\n%s\n\n[ TAP TO START ]" % [mode_name, rule_label.text]
 	
-	# Small animation
+	# Entrance Animation
 	rule_popup.scale = Vector2.ZERO
+	rule_popup.pivot_offset = rule_popup.size / 2.0
 	var tween = create_tween()
-	tween.tween_property(rule_popup, "scale", Vector2.ONE, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(rule_popup, "scale", Vector2.ONE, 0.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _start_gameplay():
 	rule_popup.visible = false
 	game_active = true
 	
-	if Global.current_mode == Global.GameMode.RUSH:
-		is_rush_mode = true
-		rush_time_left = 60.0
+	if is_rush_mode:
 		time_label.show()
-	elif Global.current_mode == Global.GameMode.SURVIVAL:
-		is_survival_mode = true
-		survival_round = 0
-		time_label.hide()
-	elif Global.current_mode == Global.GameMode.NORMAL:
-		is_normal_mode = true
-		time_label.hide()
 	else:
-		is_rush_mode = false
-		is_survival_mode = false
-		is_normal_mode = false
 		time_label.hide()
 
 func _generate_new_rule():
@@ -156,7 +172,7 @@ func _generate_new_rule():
 		_show_round_announcement()
 	else:
 		target_count = randi() % 3 + 3 # 3 to 5
-		if is_normal_mode and score >= 100: # Example win condition for normal
+		if is_normal_mode and score >= 200: # Increased win condition
 			_trigger_win("LEVEL COMPLETE!")
 			return
 	
@@ -170,21 +186,20 @@ func _generate_new_rule():
 	_update_score_ui()
 
 func _show_round_announcement():
-	# Repurpose popup_label for a quick "ROUND X" flash
-	var original_text = popup_label.text
-	popup_label.text = "ROUND %d" % survival_round
+	popup_label.text = "ROUND %d\n\nGET READY!" % survival_round
 	rule_popup.visible = true
 	rule_popup.modulate.a = 1.0
 	rule_popup.scale = Vector2.ZERO
 	
 	var tween = create_tween()
-	tween.tween_property(rule_popup, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_interval(1.0)
-	tween.tween_property(rule_popup, "modulate:a", 0.0, 0.3)
+	tween.tween_property(rule_popup, "scale", Vector2.ONE, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_interval(1.5)
+	tween.tween_property(rule_popup, "modulate:a", 0.0, 0.4)
 	tween.tween_callback(func(): 
 		rule_popup.visible = false
 		rule_popup.modulate.a = 1.0
-		popup_label.text = original_text
+		# Update rule after announcement
+		popup_label.text = "[ SURVIVAL MODE ]\n\n%s\n\n[ TAP TO START ]" % rule_label.text
 	)
 
 func _get_difficulty_multiplier() -> float:
@@ -204,7 +219,17 @@ func _process(delta):
 	if game_active:
 		if is_rush_mode:
 			rush_time_left -= delta
-			time_label.text = "TIME: %0.1f" % rush_time_left
+			time_label.text = "TIME: %0.1f" % max(0, rush_time_left)
+			
+			# Low time pulsing
+			if rush_time_left < 10.0:
+				time_label.modulate = Color.RED if int(rush_time_left * 4) % 2 == 0 else Color.WHITE
+				time_label.scale = Vector2(1.2, 1.2) if int(rush_time_left * 4) % 2 == 0 else Vector2.ONE
+				time_label.pivot_offset = time_label.size / 2.0
+			else:
+				time_label.modulate = Color.WHITE
+				time_label.scale = Vector2.ONE
+
 			if rush_time_left <= 0:
 				rush_time_left = 0
 				_trigger_game_over("TIME UP!")
@@ -228,6 +253,11 @@ func _input(event):
 		if event.pressed:
 			if rule_popup and rule_popup.visible:
 				_start_gameplay()
+				get_viewport().set_input_as_handled()
+				return
+			
+			if oops_overlay and oops_overlay.visible:
+				get_tree().change_scene_to_file("res://Scenes/home.tscn")
 				get_viewport().set_input_as_handled()
 				return
 			
@@ -340,29 +370,57 @@ func _shake_screen():
 	tween.tween_property(self, "position", Vector2(0, 0), 0.05)
 
 func _update_score_ui():
+	# Premium score styling
 	score_label.text = "SCORE: %d\nPROGRESS: %d/%d" % [score, current_progress, target_count]
+	score_label.add_theme_font_size_override("font_size", 55)
+	score_label.add_theme_color_override("font_color", Color("F4A261")) # Warm gold/orange
+	score_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	score_label.add_theme_constant_override("outline_size", 10)
+	
+	# Slight punch animation on update
+	var tween = create_tween()
+	score_label.scale = Vector2(1.1, 1.1)
+	score_label.pivot_offset = score_label.size / 2.0
+	tween.tween_property(score_label, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
 func _trigger_game_over(message: String):
 	game_active = false
 	oops_overlay.visible = true
+	oops_overlay.color = Color(0, 0, 0, 0.8) # Darker backdrop
 	oops_label.text = message
+	oops_label.add_theme_color_override("font_color", Color("E63946")) # Reddish
+	oops_label.add_theme_font_size_override("font_size", 120)
 	
 	var tween = create_tween()
 	oops_label.scale = Vector2.ZERO
-	tween.tween_property(oops_label, "scale", Vector2.ONE, 0.5).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	oops_label.pivot_offset = oops_label.size / 2.0
+	tween.tween_property(oops_label, "scale", Vector2.ONE, 0.6).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	
+	# Add a "TAP TO CONTINUE" sub-label
+	var tap_label = Label.new()
+	tap_label.text = "TAP TO CONTINUE"
+	tap_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tap_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	tap_label.offset_top = -200
+	tap_label.add_theme_font_size_override("font_size", 40)
+	oops_overlay.add_child(tap_label)
 	
 	await Global.show_ad_if_needed(self)
-	get_tree().change_scene_to_file("res://Scenes/home.tscn")
+	# Wait for a tap before changing scene? Or just change after a delay?
+	# For now, keep it simple but better looking.
+	get_tree().create_timer(2.5).timeout.connect(func(): get_tree().change_scene_to_file("res://Scenes/home.tscn"))
 
 func _trigger_win(message: String):
 	game_active = false
 	oops_overlay.visible = true
-	oops_overlay.color = Color(0, 0.8, 0, 0.5) # Greenish for win
+	oops_overlay.color = Color(0, 0.4, 0.2, 0.8) # Deep green premium win color
 	oops_label.text = message
+	oops_label.add_theme_color_override("font_color", Color("2A9D8F")) # Greenish
+	oops_label.add_theme_font_size_override("font_size", 120)
 	
 	var tween = create_tween()
 	oops_label.scale = Vector2.ZERO
-	tween.tween_property(oops_label, "scale", Vector2.ONE, 0.5).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-	
-	await Global.show_ad_if_needed(self)
-	get_tree().change_scene_to_file("res://Scenes/home.tscn")
+	oops_label.pivot_offset = oops_label.size / 2.0
+	tween.tween_property(oops_label, "scale", Vector2.ONE, 0.6).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+
+	get_tree().create_timer(3.0).timeout.connect(func(): get_tree().change_scene_to_file("res://Scenes/home.tscn"))
