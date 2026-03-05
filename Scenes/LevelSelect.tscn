@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://c7v7r8y6x2w8e"]
+[gd_scene format=3 uid="uid://c7v7r8y6x2w8e"]
 
 [ext_resource type="Script" path="res://Scripts/level_select.gd" id="1_script"]
 [ext_resource type="FontFile" uid="uid://c6c1i4fulm8lg" path="res://Assets/monogram/ttf/monogram.ttf" id="2_font"]
@@ -51,9 +51,9 @@ horizontal_scroll_mode = 0
 
 [node name="GridContainer" type="GridContainer" parent="VBoxContainer/ScrollContainer"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/h_separation = 25
-theme_override_constants/v_separation = 25
+size_flags_horizontal = 6
+theme_override_constants/h_separation = 30
+theme_override_constants/v_separation = 30
 columns = 4
 
 [node name="BackButton" type="Button" parent="VBoxContainer"]

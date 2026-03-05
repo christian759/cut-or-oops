@@ -51,18 +51,17 @@ func _ready():
 	add_child(slash_audio)
 	# Users will need to set slash_audio.stream to an actual sound file
 	
-	# Knife Slash Visuals
-	cut_line.width = 20.0
+	# Knife Slash Visuals - Polished
+	cut_line.width = 30.0
 	var curve = Curve.new()
 	curve.add_point(Vector2(0, 0))
-	curve.add_point(Vector2(0.5, 1))
+	curve.add_point(Vector2(0.2, 1.0))
 	curve.add_point(Vector2(1, 0))
 	cut_line.width_curve = curve
 	
 	var gradient = Gradient.new()
 	gradient.add_point(0.0, Color(1, 1, 1, 0))
-	gradient.add_point(0.2, Color(1, 1, 1, 1))
-	gradient.add_point(0.8, Color(1, 1, 1, 1))
+	gradient.add_point(0.5, Color(1, 1, 1, 0.9))
 	gradient.add_point(1.0, Color(1, 1, 1, 0))
 	cut_line.gradient = gradient
 	
@@ -208,11 +207,11 @@ func _show_round_announcement(title_text: String):
 func _get_difficulty_multiplier() -> float:
 	var multiplier = 1.0
 	if is_survival_mode:
-		multiplier = 1.0 + (survival_round - 1) * 0.2 # 20% faster per round
+		multiplier = 1.0 + (survival_round - 1) * 0.35 # Much more aggressive
 	elif is_normal_mode:
-		multiplier = 1.0 + (normal_level - 1) * 0.1 # 10% faster per level
+		multiplier = 1.1 + (normal_level - 1) * 0.15 # Higher base difficulty
 	elif is_rush_mode:
-		multiplier = 1.0 + (score / 1000.0) * 0.5 # 50% faster per 1000 points
+		multiplier = 1.2 + (score / 800.0) * 0.6 # Faster scaling
 	return multiplier
 
 func _get_shape_name(type: int) -> String:
@@ -249,11 +248,11 @@ func _process(delta):
 			_spawn_shape()
 
 	if cut_line.points.size() > 0:
-		cut_line.modulate.a -= delta * 8.0 # Very fast fade for knife effect
+		cut_line.modulate.a -= delta * 12.0 # Even faster fade
 		if cut_line.modulate.a <= 0:
 			cut_line.clear_points()
-		elif cut_line.points.size() > 10:
-			# Keep it short like a blade
+		elif cut_line.points.size() > 6:
+			# Shorter, sharper trail
 			cut_line.remove_point(0)
 
 func _input(event):
@@ -330,8 +329,7 @@ func _check_cut(start_pos: Vector2, end_pos: Vector2):
 		if not shape is ShapeObject or shape.is_cut: continue
 		
 		# More robust check: check endpoints and midpoints to ensure we don't skip over fast shapes
-		var mid_pos = (start_pos + end_pos) / 2.0
-		if shape.is_point_inside(start_pos) or shape.is_point_inside(end_pos) or shape.is_point_inside(mid_pos):
+		if shape.is_point_inside(start_pos) or shape.is_point_inside(end_pos):
 			shape.cut_shape(start_pos, end_pos)
 			_play_slash_sound()
 			_evaluate_cut(shape)
@@ -439,25 +437,58 @@ func _trigger_win(message: String):
 
 	_add_overlay_buttons(true)
 
+func _style_premium_button(btn: Button):
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color.WHITE
+	style.border_width_left = 6
+	style.border_width_top = 6
+	style.border_width_right = 6
+	style.border_width_bottom = 12
+	style.border_color = Color.BLACK
+	style.corner_radius_top_left = 20
+	style.corner_radius_top_right = 20
+	style.corner_radius_bottom_right = 20
+	style.corner_radius_bottom_left = 20
+	style.content_margin_left = 40
+	style.content_margin_top = 20
+	style.content_margin_right = 40
+	style.content_margin_bottom = 20
+	
+	var style_pressed = style.duplicate()
+	style_pressed.bg_color = Color(0.8, 0.8, 0.8)
+	style_pressed.border_width_top = 10
+	style_pressed.border_width_bottom = 6
+	
+	var font = preload("res://Assets/monogram/ttf/monogram.ttf")
+	btn.add_theme_font_override("font", font)
+	btn.add_theme_font_size_override("font_size", 45)
+	btn.add_theme_color_override("font_color", Color.BLACK)
+	btn.add_theme_stylebox_override("normal", style)
+	btn.add_theme_stylebox_override("pressed", style_pressed)
+	btn.add_theme_stylebox_override("hover", style)
+	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+
 func _add_overlay_buttons(is_win: bool):
 	# Clear existing tap labels if any
 	for child in oops_overlay.get_children():
 		if child is Label and child != oops_label:
 			child.queue_free()
+		elif child is HBoxContainer:
+			child.queue_free()
 	
 	var button_container = HBoxContainer.new()
 	button_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	button_container.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	button_container.offset_top = -200
-	button_container.offset_left = -400
-	button_container.offset_right = 400
-	button_container.theme_override_constants/separation = 40
+	button_container.offset_top = -250
+	button_container.offset_left = -450
+	button_container.offset_right = 450
+	button_container.add_theme_constant_override("separation", 30)
 	oops_overlay.add_child(button_container)
 	
 	if is_win:
 		var next_btn = Button.new()
 		next_btn.text = "NEXT LEVEL"
-		next_btn.add_theme_font_size_override("font_size", 45)
+		_style_premium_button(next_btn)
 		next_btn.pressed.connect(func(): 
 			Global.selected_level = min(200, normal_level + 1)
 			get_tree().reload_current_scene()
@@ -467,12 +498,18 @@ func _add_overlay_buttons(is_win: bool):
 	else:
 		var retry_btn = Button.new()
 		retry_btn.text = "RETRY"
-		retry_btn.add_theme_font_size_override("font_size", 45)
+		_style_premium_button(retry_btn)
 		retry_btn.pressed.connect(func(): get_tree().reload_current_scene())
 		button_container.add_child(retry_btn)
 	
 	var menu_btn = Button.new()
-	menu_btn.text = "LEVEL SELECT"
-	menu_btn.add_theme_font_size_override("font_size", 45)
+	menu_btn.text = "LEVELS"
+	_style_premium_button(menu_btn)
 	menu_btn.pressed.connect(func(): get_tree().change_scene_to_file("res://Scenes/LevelSelect.tscn"))
 	button_container.add_child(menu_btn)
+	
+	var home_btn = Button.new()
+	home_btn.text = "HOME"
+	_style_premium_button(home_btn)
+	home_btn.pressed.connect(func(): get_tree().change_scene_to_file("res://Scenes/home.tscn"))
+	button_container.add_child(home_btn)

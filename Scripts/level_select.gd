@@ -42,49 +42,55 @@ func _setup_ui():
 func _populate_levels():
 	var font = preload("res://Assets/monogram/ttf/monogram.ttf")
 	
+	# Clear existing if any
+	for child in grid.get_children():
+		child.queue_free()
+		
+	# Determine columns based on screen width
+	var screen_width = get_viewport_rect().size.x
+	grid.columns = floor((screen_width - 80) / 160) # roughly 120 + 40 spacing
+	
 	for i in range(1, 201):
 		var btn = Button.new()
 		btn.text = str(i)
-		btn.custom_minimum_size = Vector2(120, 120)
+		btn.custom_minimum_size = Vector2(140, 140)
 		btn.add_theme_font_override("font", font)
-		btn.add_theme_font_size_override("font_size", 45)
+		btn.add_theme_font_size_override("font_size", 50)
 		btn.add_theme_color_override("font_color", Color.BLACK)
 		
-		# Styling
-		var style_normal = StyleBoxFlat.new()
-		style_normal.bg_color = Color.WHITE
-		style_normal.border_width_left = 4
-		style_normal.border_width_top = 4
-		style_normal.border_width_right = 4
-		style_normal.border_width_bottom = 8
-		style_normal.border_color = Color.BLACK
-		style_normal.corner_radius_top_left = 10
-		style_normal.corner_radius_top_right = 10
-		style_normal.corner_radius_bottom_right = 10
-		style_normal.corner_radius_bottom_left = 10
-		
-		var style_locked = style_normal.duplicate()
-		style_locked.bg_color = Color(0.6, 0.6, 0.6)
-		style_locked.border_color = Color(0.3, 0.3, 0.3)
-		
-		var style_pressed = style_normal.duplicate()
-		style_pressed.bg_color = Color(0.8, 0.8, 0.8)
-		style_pressed.border_width_top = 6
-		style_pressed.border_width_bottom = 4
+		# Premium styling helper usage
+		_style_level_button(btn, i <= Global.unlocked_levels)
 		
 		if i <= Global.unlocked_levels:
-			btn.add_theme_stylebox_override("normal", style_normal)
-			btn.add_theme_stylebox_override("pressed", style_pressed)
-			btn.add_theme_stylebox_override("hover", style_normal)
 			btn.pressed.connect(_on_level_selected.bind(i))
 		else:
-			btn.add_theme_stylebox_override("normal", style_locked)
-			btn.add_theme_stylebox_override("pressed", style_locked)
-			btn.add_theme_stylebox_override("hover", style_locked)
 			btn.disabled = true
-			btn.modulate.a = 0.5
+			btn.modulate.a = 0.6
 			
 		grid.add_child(btn)
+
+func _style_level_button(btn: Button, is_unlocked: bool):
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color.WHITE if is_unlocked else Color(0.7, 0.7, 0.7)
+	style_normal.border_width_left = 6
+	style_normal.border_width_top = 6
+	style_normal.border_width_right = 6
+	style_normal.border_width_bottom = 12
+	style_normal.border_color = Color.BLACK
+	style_normal.corner_radius_top_left = 12
+	style_normal.corner_radius_top_right = 12
+	style_normal.corner_radius_bottom_right = 12
+	style_normal.corner_radius_bottom_left = 12
+	
+	var style_pressed = style_normal.duplicate()
+	style_pressed.bg_color = Color(0.9, 0.9, 0.9)
+	style_pressed.border_width_top = 10
+	style_pressed.border_width_bottom = 6
+	
+	btn.add_theme_stylebox_override("normal", style_normal)
+	btn.add_theme_stylebox_override("pressed", style_pressed)
+	btn.add_theme_stylebox_override("hover", style_normal)
+	btn.add_theme_stylebox_override("disabled", style_normal)
 
 func _on_level_selected(level: int):
 	Global.selected_level = level
