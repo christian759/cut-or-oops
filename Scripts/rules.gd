@@ -30,6 +30,7 @@ var is_rush_mode := false
 var is_survival_mode := false
 var is_normal_mode := false
 var survival_round := 0
+var normal_level := 1
 var time_label: Label
 var slash_audio: AudioStreamPlayer
 
@@ -76,6 +77,7 @@ func _initialize_mode():
 		survival_round = 0
 	elif Global.current_mode == Global.GameMode.NORMAL:
 		is_normal_mode = true
+		normal_level = Global.selected_level
 	else:
 		is_rush_mode = false
 		is_survival_mode = false
@@ -110,7 +112,7 @@ func _ensure_popup_ui():
 		popup_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		popup_label.add_theme_color_override("font_color", Color.WHITE)
 		popup_label.add_theme_font_size_override("font_size", 45)
-		popup_label.add_theme_fonts_override("font", preload("res://Assets/monogram/ttf/monogram.ttf"))
+		popup_label.add_theme_font_override("font", preload("res://Assets/monogram/ttf/monogram.ttf"))
 		popup_label.text = "RULES"
 		rule_popup.add_child(popup_label)
 		
@@ -126,7 +128,7 @@ func _ensure_popup_ui():
 		time_label.add_theme_color_override("font_color", Color("E63946"))
 		time_label.add_theme_color_override("font_outline_color", Color.BLACK)
 		time_label.add_theme_constant_override("outline_size", 12)
-		time_label.add_theme_fonts_override("font", preload("res://Assets/monogram/ttf/monogram.ttf"))
+		time_label.add_theme_font_override("font", preload("res://Assets/monogram/ttf/monogram.ttf"))
 		$UI.add_child(time_label)
 		time_label.hide()
 	else:
@@ -165,16 +167,17 @@ func _generate_new_rule():
 	current_progress = 0
 	
 	if is_rush_mode:
-		target_count = randi() % 4 + 4 # 4 to 7
+		target_count = randi() % 4 + 4 + int(score / 500) # Increases with score
 	elif is_survival_mode:
 		survival_round += 1
-		target_count = 3 + int(float(survival_round) / 2.0) # Slowly increases
-		_show_round_announcement()
+		target_count = 3 + int(survival_round / 1.5) # Faster scaling
+		_show_round_announcement("ROUND %d" % survival_round)
+	elif is_normal_mode:
+		target_count = 3 + int(normal_level / 2.0) # Increases every 2 levels
+		if score > 0 and current_progress >= target_count: # This shouldn't happen here but for safety
+			pass 
 	else:
-		target_count = randi() % 3 + 3 # 3 to 5
-		if is_normal_mode and score >= 200: # Increased win condition
-			_trigger_win("LEVEL COMPLETE!")
-			return
+		target_count = randi() % 3 + 3
 	
 	if current_rule_type == RuleType.TYPE_ONLY:
 		target_shape = randi() % 6
@@ -185,8 +188,8 @@ func _generate_new_rule():
 	
 	_update_score_ui()
 
-func _show_round_announcement():
-	popup_label.text = "ROUND %d\n\nGET READY!" % survival_round
+func _show_round_announcement(title_text: String):
+	popup_label.text = "%s\n\nGET READY!" % title_text
 	rule_popup.visible = true
 	rule_popup.modulate.a = 1.0
 	rule_popup.scale = Vector2.ZERO
@@ -203,9 +206,14 @@ func _show_round_announcement():
 	)
 
 func _get_difficulty_multiplier() -> float:
+	var multiplier = 1.0
 	if is_survival_mode:
-		return 1.0 + (survival_round - 1) * 0.15 # 15% faster per round
-	return 1.0
+		multiplier = 1.0 + (survival_round - 1) * 0.2 # 20% faster per round
+	elif is_normal_mode:
+		multiplier = 1.0 + (normal_level - 1) * 0.1 # 10% faster per level
+	elif is_rush_mode:
+		multiplier = 1.0 + (score / 1000.0) * 0.5 # 50% faster per 1000 points
+	return multiplier
 
 func _get_shape_name(type: int) -> String:
 	var names = ["TRIANGLES", "SQUARES", "TRAPEZIUMS", "RHOMBUSES", "PENTAGONS", "HEXAGONS"]
@@ -257,7 +265,8 @@ func _input(event):
 				return
 			
 			if oops_overlay and oops_overlay.visible:
-				get_tree().change_scene_to_file("res://Scenes/home.tscn")
+				if not is_normal_mode:
+					get_tree().change_scene_to_file("res://Scenes/home.tscn")
 				get_viewport().set_input_as_handled()
 				return
 			
@@ -351,12 +360,17 @@ func _evaluate_cut(shape):
 		if current_progress >= target_count:
 			if is_rush_mode:
 				rush_time_left += 10.0 # Rule completion bonus
+			elif is_normal_mode:
+				if normal_level == Global.unlocked_levels and normal_level < 200:
+					Global.unlocked_levels += 1
+					Global.save_data()
+				_trigger_win("LEVEL %d COMPLETE!" % normal_level)
+				return # Stop gameplay after level completion
 			_generate_new_rule()
 	else:
-		if is_rush_mode or is_normal_mode:
+		if is_rush_mode:
 			# Penalty instead of instant game over
-			if is_rush_mode:
-				rush_time_left -= 5.0
+			rush_time_left -= 5.0
 			score = max(0, score - 5)
 			_update_score_ui()
 			_shake_screen() # Visual feedback
@@ -396,19 +410,19 @@ func _trigger_game_over(message: String):
 	oops_label.pivot_offset = oops_label.size / 2.0
 	tween.tween_property(oops_label, "scale", Vector2.ONE, 0.6).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
-	# Add a "TAP TO CONTINUE" sub-label
-	var tap_label = Label.new()
-	tap_label.text = "TAP TO CONTINUE"
-	tap_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	tap_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	tap_label.offset_top = -200
-	tap_label.add_theme_font_size_override("font_size", 40)
-	oops_overlay.add_child(tap_label)
-	
-	await Global.show_ad_if_needed(self)
-	# Wait for a tap before changing scene? Or just change after a delay?
-	# For now, keep it simple but better looking.
-	get_tree().create_timer(2.5).timeout.connect(func(): get_tree().change_scene_to_file("res://Scenes/home.tscn"))
+	if is_normal_mode:
+		_add_overlay_buttons(false)
+	else:
+		# Original Survival/Rush logic: Tap anywhere to go home
+		var tap_label = Label.new()
+		tap_label.text = "TAP TO CONTINUE"
+		tap_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		tap_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+		tap_label.offset_top = -200
+		tap_label.add_theme_font_size_override("font_size", 40)
+		oops_overlay.add_child(tap_label)
+		
+		get_tree().create_timer(4.0).timeout.connect(func(): if oops_overlay.visible: get_tree().change_scene_to_file("res://Scenes/home.tscn"))
 
 func _trigger_win(message: String):
 	game_active = false
@@ -423,4 +437,42 @@ func _trigger_win(message: String):
 	oops_label.pivot_offset = oops_label.size / 2.0
 	tween.tween_property(oops_label, "scale", Vector2.ONE, 0.6).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
-	get_tree().create_timer(3.0).timeout.connect(func(): get_tree().change_scene_to_file("res://Scenes/home.tscn"))
+	_add_overlay_buttons(true)
+
+func _add_overlay_buttons(is_win: bool):
+	# Clear existing tap labels if any
+	for child in oops_overlay.get_children():
+		if child is Label and child != oops_label:
+			child.queue_free()
+	
+	var button_container = HBoxContainer.new()
+	button_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	button_container.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	button_container.offset_top = -200
+	button_container.offset_left = -400
+	button_container.offset_right = 400
+	button_container.theme_override_constants/separation = 40
+	oops_overlay.add_child(button_container)
+	
+	if is_win:
+		var next_btn = Button.new()
+		next_btn.text = "NEXT LEVEL"
+		next_btn.add_theme_font_size_override("font_size", 45)
+		next_btn.pressed.connect(func(): 
+			Global.selected_level = min(200, normal_level + 1)
+			get_tree().reload_current_scene()
+		)
+		if normal_level >= 200: next_btn.disabled = true
+		button_container.add_child(next_btn)
+	else:
+		var retry_btn = Button.new()
+		retry_btn.text = "RETRY"
+		retry_btn.add_theme_font_size_override("font_size", 45)
+		retry_btn.pressed.connect(func(): get_tree().reload_current_scene())
+		button_container.add_child(retry_btn)
+	
+	var menu_btn = Button.new()
+	menu_btn.text = "LEVEL SELECT"
+	menu_btn.add_theme_font_size_override("font_size", 45)
+	menu_btn.pressed.connect(func(): get_tree().change_scene_to_file("res://Scenes/LevelSelect.tscn"))
+	button_container.add_child(menu_btn)
