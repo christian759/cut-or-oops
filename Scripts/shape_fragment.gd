@@ -9,8 +9,9 @@ var gravity_strength := 1200.0
 var lifetime := 2.5
 
 func _ready():
+	lifetime = 1.5
 	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.5).set_delay(lifetime - 0.5)
+	tween.tween_property(self, "modulate:a", 0.0, 0.3).set_delay(lifetime - 0.3)
 	tween.tween_callback(queue_free)
 
 func _process(delta):
@@ -32,16 +33,7 @@ func setup(points: PackedVector2Array, color: Color, start_pos: Vector2, start_r
 	
 	outline.polygon = points
 	outline.color = Color.BLACK
-	outline.offset = Vector2.ZERO
-	# Use a slightly larger polygon for outline instead of scale to avoid center issues
-	var outline_points = Geometry2D.offset_polygon(points, 4.0, Geometry2D.JOIN_MITER)
-	if outline_points.size() > 0:
-		outline.polygon = outline_points[0]
-	else:
-		outline.polygon = points
-		outline.scale = Vector2(1.1, 1.1)
-	
-	# Ensure outline is behind fill
+	outline.scale = Vector2(1.1, 1.1)
 	outline.z_index = -1
 
 	position = start_pos

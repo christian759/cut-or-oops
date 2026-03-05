@@ -265,8 +265,10 @@ func _input(event):
 			
 			if oops_overlay and oops_overlay.visible:
 				if not is_normal_mode:
+					# In Survival/Rush, tap anywhere to go home
 					get_tree().change_scene_to_file("res://Scenes/home.tscn")
-				get_viewport().set_input_as_handled()
+					get_viewport().set_input_as_handled()
+				# In Normal mode, we let the buttons handle the input
 				return
 			
 			if not game_active: return
@@ -398,6 +400,7 @@ func _update_score_ui():
 func _trigger_game_over(message: String):
 	game_active = false
 	oops_overlay.visible = true
+	oops_overlay.mouse_filter = Control.MOUSE_FILTER_STOP # Block gameplay inputs
 	oops_overlay.color = Color(0, 0, 0, 0.8) # Darker backdrop
 	oops_label.text = message
 	oops_label.add_theme_color_override("font_color", Color("E63946")) # Reddish
@@ -425,6 +428,7 @@ func _trigger_game_over(message: String):
 func _trigger_win(message: String):
 	game_active = false
 	oops_overlay.visible = true
+	oops_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	oops_overlay.color = Color(0, 0.4, 0.2, 0.8) # Deep green premium win color
 	oops_label.text = message
 	oops_label.add_theme_color_override("font_color", Color("2A9D8F")) # Greenish
